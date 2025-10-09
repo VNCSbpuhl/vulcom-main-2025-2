@@ -119,6 +119,7 @@ controller.delete = async function(req, res) {
   }
 }
 
+
 controller.login = async function(req, res) {
   try {
 
@@ -137,10 +138,14 @@ controller.login = async function(req, res) {
       // HTTP 401: Unauthorized
       if(! user) return res.status(401).end()
 
-      // Usuário encontrado, vamos conferir a senha
-      let passwordIsValid
-      if(req.body?.username === 'admin' && req.body?.password === 'admin123') passwordIsValid = true
-      else passwordIsValid = user.password === req.body?.password
+      // REMOVENDO VULNERABILIDADE DE AUTENTICAÇÃO FIXA
+      // if(req.body?.username === 'admin' && req.body?.password === 'admin123') passwordIsValid = true
+      // else passwordIsValid = user.password === req.body?.password
+      // passwordIsValid = user.password === req.body?.password
+      
+      // Chamando bcrypt.compare() para verificar se o hash da senha
+      // enviada coincide com o hash da senha armazenada no BD
+      const passwordIsValid = await bcrypt.compare(req.body?.password, user.password)
 
       // Se a senha estiver errada, retorna
       // HTTP 401: Unauthorized
@@ -174,6 +179,7 @@ controller.login = async function(req, res) {
     res.status(500).end()
   }
 }
+
 
 controller.me = function(req, res) {
   // Retorna as informações do usuário autenticado
