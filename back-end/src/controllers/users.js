@@ -32,7 +32,11 @@ controller.create = async function(req, res) {
 
 controller.retrieveAll = async function(req, res) {
   try {
-    const result = await prisma.user.findMany()
+    const result = await prisma.user.findMany(
+      // Omite o campo "password" do resultado
+      // por questão de segurança
+      { omit: { password: true } } 
+    )
 
     // HTTP 200: OK (implícito)
     res.send(result)
@@ -48,6 +52,9 @@ controller.retrieveAll = async function(req, res) {
 controller.retrieveOne = async function(req, res) {
   try {
     const result = await prisma.user.findUnique({
+      // Omite o campo "password" do resultado
+      // por questão de segurança
+      omit: { password: true },
       where: { id: Number(req.params.id) }
     })
 
@@ -150,6 +157,10 @@ controller.login = async function(req, res) {
       // Se a senha estiver errada, retorna
       // HTTP 401: Unauthorized
       if(! passwordIsValid) return res.status(401).end()
+
+      // Por motivos de segurança, exclui o campo "password" dos dados do usuário
+      // para que ele não seja incluído no token
+      if(user.password) delete user.password
 
       // Usuário e senha OK, passamos ao procedimento de gerar o token
       const token = jwt.sign(
