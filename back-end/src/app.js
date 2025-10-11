@@ -11,14 +11,7 @@ import cors from 'cors'
 
 app.use(cors({
     origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : ['http://localhost:3000', 'http://127.0.0.1:3000'],
-    // credentials: true
-}))
-
-import cors from 'cors'
-
-app.use(cors({
-  origin: process.env.ALLOWED_ORIGINS.split(','),
-  // credentials: true
+    credentials: true
 }))
 
 app.use(logger('dev'))
