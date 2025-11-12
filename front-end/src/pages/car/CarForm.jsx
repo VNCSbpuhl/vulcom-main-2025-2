@@ -16,6 +16,8 @@ import myfetch from '../../lib/myfetch'
 import useConfirmDialog from '../../ui/useConfirmDialog'
 import useNotification from '../../ui/useNotification'
 import useWaiting from '../../ui/useWaiting'
+import Car from '../../models/Car.js'
+import { ZodError } from 'zod'
 
 export default function CarForm() {
   /*
@@ -79,10 +81,10 @@ export default function CarForm() {
     years.push(year)
   }
 
-  const [imported, setImported] = React.useState(false)
-  // car.imported = imported
   const handleImportedChange = (event) => {
-    setImported(event.target.checked)
+    const carCopy = { ...car }
+    carCopy.imported = event.target.checked
+    setState({ ...state, car: carCopy, formModified: true })
   }
 
   function handleFieldChange(event) {
@@ -95,25 +97,44 @@ export default function CarForm() {
     event.preventDefault(); // Evita que a página seja recarregada
     showWaiting(true); // Exibe a tela de espera
     try {
+      // Prepara os dados para validação
+      const carData = { ...car }
+      
+      // Trata campos opcionais - o schema já trata isso, mas garantimos que está correto
+      if(carData.selling_price === '') carData.selling_price = null
+      if(carData.selling_date === null || carData.selling_date === undefined) {
+        carData.selling_date = null
+      }
 
-      if(car.selling_price === '') car.selling_price = null
+      // Invoca a validação do Zod
+      Car.parse(carData)
 
       // Se houver parâmetro na rota, significa que estamos modificando
-      // um cliente já existente. A requisição será enviada ao back-end
+      // um carro já existente. A requisição será enviada ao back-end
       // usando o método PUT
-      if (params.id) await myfetch.put(`/cars/${params.id}`, car)
-      // Caso contrário, estamos criando um novo cliente, e enviaremos
+      if (params.id) await myfetch.put(`/cars/${params.id}`, carData)
+      // Caso contrário, estamos criando um novo carro, e enviaremos
       // a requisição com o método POST
-      else await myfetch.post('/cars', car)
+      else await myfetch.post('/cars', carData)
 
       // Deu certo, vamos exbir a mensagem de feedback que, quando for
-      // fechada, vai nos mandar de volta para a listagem de clientes
+      // fechada, vai nos mandar de volta para a listagem de carros
       notify('Item salvo com sucesso.', 'success', 4000, () => {
         navigate('..', { relative: 'path', replace: true })
       })
     } catch (error) {
       console.error(error)
-      notify(error.message, 'error')
+      
+      // Em caso de erro do Zod, preenchemos a variável de estado
+      // inputErrors com os erros para depois exibir abaixo de cada
+      // campo de entrada
+      if(error instanceof ZodError) {
+        const errorMessages = {}
+        for(let i of error.issues) errorMessages[i.path[0]] = i.message
+        setState({ ...state, inputErrors: errorMessages })
+        notify('Há campos com valores inválidos. Verifique.', 'error')
+      }
+      else notify(error.message, 'error')
     } finally {
       // Desliga a tela de espera, seja em caso de sucesso, seja em caso de erro
       showWaiting(false)
@@ -229,8 +250,8 @@ export default function CarForm() {
             value={car.color}
             onChange={handleFieldChange}
             select
-            helperText={inputErrors?.state}
-            error={inputErrors?.state}
+            helperText={inputErrors?.color}
+            error={inputErrors?.color}
           >
             {colors.map((s) => (
               <MenuItem key={s.value} value={s.value}>
@@ -264,8 +285,7 @@ export default function CarForm() {
                 <Checkbox
                   name='imported'
                   variant='filled'
-                  value={(car.imported = imported)}
-                  checked={imported}
+                  checked={car.imported || false}
                   onChange={handleImportedChange}
                   color='primary'
                 />
@@ -288,8 +308,8 @@ export default function CarForm() {
                 variant='filled'
                 required
                 fullWidth
-                helperText={inputErrors?.phone}
-                error={inputErrors?.phone}
+                helperText={inputErrors?.plates}
+                error={inputErrors?.plates}
               />
             )}
           </InputMask>
