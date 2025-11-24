@@ -159,7 +159,15 @@ export default function CarForm() {
 
       // Busca a lista de clientes para preencher o combo de escolha
       // do cliente que comprou o carro
-      customers = await myfetch.get('/customers')
+      try {
+        const customersData = await myfetch.get('/customers')
+        // Garante que customers seja sempre um array
+        customers = Array.isArray(customersData) ? customersData : []
+      } catch (error) {
+        console.error('Erro ao carregar clientes:', error)
+        customers = [] // Mantém como array vazio em caso de erro
+        // Não notifica erro aqui para não interromper o fluxo se o usuário não tiver permissão
+      }
 
       // Se houver parâmetro na rota, precisamos buscar o carro para
       // ser editado
@@ -362,7 +370,7 @@ export default function CarForm() {
             helperText={inputErrors?.customer_id || 'Tecle DEL para limpar o cliente'}
             error={inputErrors?.customer_id}
           >
-            {customers.map((c) => (
+            {Array.isArray(customers) && customers.map((c) => (
               <MenuItem key={c.id} value={c.id}>
                 {c.name}
               </MenuItem>

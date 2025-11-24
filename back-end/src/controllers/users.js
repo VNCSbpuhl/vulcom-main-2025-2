@@ -155,6 +155,11 @@ controller.delete = async function(req, res) {
 
 controller.login = async function(req, res) {
   try {
+      // Verifica se TOKEN_SECRET está configurado
+      if(!process.env.TOKEN_SECRET) {
+        console.error('ERRO: TOKEN_SECRET não está configurado no arquivo .env')
+        return res.status(500).json({ error: 'Configuração do servidor incompleta' })
+      }
 
       // Busca o usuário no BD usando o valor dos campos
       // "username" OU "email"
@@ -196,21 +201,23 @@ controller.login = async function(req, res) {
       )
 
       // Formamos o cookie para enviar ao front-end
+      // Em desenvolvimento (http), secure deve ser false
+      const isProduction = process.env.NODE_ENV === 'production'
       res.cookie(process.env.AUTH_COOKIE_NAME, token, {
         httpOnly: true, // O cookie ficará inacessível para o JS no front-end
-        secure: true,   // O cookie será criptografado em conexões https
-        sameSite: 'None',
+        secure: isProduction,   // O cookie será criptografado apenas em conexões https (produção)
+        sameSite: isProduction ? 'None' : 'Lax',
         path: '/',
-        maxAge: 24 * 60 * 60 * 100  // 24h
+        maxAge: 24 * 60 * 60 * 1000  // 24h (corrigido: estava 100, agora 1000)
       })
 
       // Cookie não HTTP-only, acessível via JS no front-end
       res.cookie('not-http-only', 'Este-cookie-NAO-eh-HTTP-Only', {
         httpOnly: false,
-        secure: true,   // O cookie será criptografado em conexões https
-        sameSite: 'None',
+        secure: isProduction,   // O cookie será criptografado apenas em conexões https (produção)
+        sameSite: isProduction ? 'None' : 'Lax',
         path: '/',
-        maxAge: 24 * 60 * 60 * 100  // 24h
+        maxAge: 24 * 60 * 60 * 1000  // 24h (corrigido: estava 100, agora 1000)
       })
 
       // Retorna APENAS o usuário autenticado com
@@ -219,10 +226,14 @@ controller.login = async function(req, res) {
 
   }
   catch(error) {
-    console.error(error)
+    console.error('ERRO NO LOGIN:', error)
+    console.error('Stack:', error.stack)
 
     // HTTP 500: Internal Server Error
-    res.status(500).end()
+    res.status(500).json({ 
+      error: 'Erro interno do servidor',
+      message: error.message 
+    })
   }
 }
 

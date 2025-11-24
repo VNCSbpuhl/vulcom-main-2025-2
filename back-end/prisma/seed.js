@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker/locale/pt_BR'
 import { PrismaClient } from '@prisma/client'
+import bcrypt from 'bcrypt'
 
 const prisma = new PrismaClient();
 
@@ -25,24 +26,26 @@ async function main() {
   const numberOfUsers = 4;
 
   // Criação do usuário admin
+  const adminPasswordHash = await bcrypt.hash('Vulcom@DSM', 12)
   const user = await prisma.user.create({
     data: {
       fullname: 'Administrador do Sistema',
       username: 'admin',
       email: 'admin@vulcom.com.br',
-      password: 'Vulcom@DSM',
+      password: adminPasswordHash,
       is_admin: true
     }
   })
   users.push(user)
   
   for (let i = 0; i < numberOfUsers; i++) {
+    const passwordHash = await bcrypt.hash('senha123', 12)
     const user = await prisma.user.create({
       data: {
         fullname: faker.person.fullName(),
         username: faker.internet.username(),
         email: faker.internet.email(),
-        password: 'senha123',
+        password: passwordHash,
         is_admin: i === 0,
       },
     });

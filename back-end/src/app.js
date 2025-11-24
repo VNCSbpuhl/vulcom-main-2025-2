@@ -10,7 +10,7 @@ const app = express()
 import cors from 'cors'
 
 app.use(cors({
-    origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : ['http://localhost:3000', 'http://127.0.0.1:3000'],
+    origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:5173', 'http://127.0.0.1:5173'],
     credentials: true
 }))
 
@@ -31,6 +31,19 @@ const limiter = rateLimit({
 app.use(limiter)
 
 /*********** ROTAS DA API **************/
+
+// Rota raiz - informações da API (sem autenticação)
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Vulcom API',
+    version: '1.0.0',
+    endpoints: {
+      cars: '/cars',
+      customers: '/customers',
+      users: '/users'
+    }
+  })
+})
 
 // Middleware de verificação do token de autorização
 import auth from './middleware/auth.js'
