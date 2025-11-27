@@ -83,6 +83,15 @@ controller.retrieveOne = async function(req, res) {
   }
 }
 
+/*
+Vulnerabilidade: API5:2023 - Falha de autenticação a nível de função
+Esta vulnerabilidade deveria ter sido evitada no código fazendo verificação de autorização
+a nível de função antes de permitir a atualização de um cliente. O código atual permite que
+qualquer usuário autenticado atualize qualquer cliente, sem verificar se o usuário possui
+privilégios administrativos. Dados de clientes são sensíveis e operações de modificação
+deveriam ser restritas apenas a usuários administradores, similar ao que é feito no controller
+de users.
+*/
 controller.update = async function(req, res) {
  try {
 

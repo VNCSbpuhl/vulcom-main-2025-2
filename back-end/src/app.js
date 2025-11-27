@@ -19,6 +19,12 @@ app.use(json())
 app.use(urlencoded({ extended: false }))
 app.use(cookieParser())
 
+/*
+Vulnerabilidade: API4:2023 - Consumo irrestrito de recursos
+Esta vulnerabilidade foi evitada no código ao implementar rate limiting usando express-rate-limit,
+limitando a 20 requisições por minuto por IP. Isso previne ataques de negação de serviço (DoS)
+e consumo excessivo de recursos como CPU, memória e largura de banda.
+*/
 // Rate limiter: limita a quantidade de requisições que cada usuário/IP
 // pode efetuar dentro de um determinado intervalo de tempo
 import { rateLimit } from 'express-rate-limit'

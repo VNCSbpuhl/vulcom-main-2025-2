@@ -69,6 +69,15 @@ controller.retrieveAll = async function(req, res) {
   }
 }
 
+/*
+Vulnerabilidade: API1:2023 - Falha de autenticação a nível de objeto
+Esta vulnerabilidade deveria ter sido evitada no código fazendo verificação de autorização
+a nível de objeto antes de retornar os dados do carro. O código atual permite que qualquer
+usuário autenticado acesse qualquer carro apenas fornecendo o ID, sem verificar se o usuário
+tem permissão para acessar aquele objeto específico (ex: verificar se o carro pertence ao
+usuário ou se o usuário é administrador). Deveria ser implementada verificação similar à
+que existe no controller de users (retrieveOne).
+*/
 controller.retrieveOne = async function(req, res) {
   try {
 
@@ -96,6 +105,14 @@ controller.retrieveOne = async function(req, res) {
   }
 }
 
+/*
+Vulnerabilidade: API5:2023 - Falha de autenticação a nível de função
+Esta vulnerabilidade deveria ter sido evitada no código fazendo verificação de autorização
+a nível de função antes de permitir a atualização de um carro. O código atual permite que
+qualquer usuário autenticado atualize qualquer carro, sem verificar se o usuário possui
+privilégios administrativos ou se é o proprietário/criador do recurso. Deveria ser implementada
+verificação similar à que existe no controller de users (verificação de is_admin ou do criador).
+*/
 controller.update = async function(req, res) {
   try {
 
@@ -132,6 +149,14 @@ controller.update = async function(req, res) {
   }
 }
 
+/*
+Vulnerabilidade: API5:2023 - Falha de autenticação a nível de função
+Esta vulnerabilidade deveria ter sido evitada no código fazendo verificação de autorização
+a nível de função antes de permitir a exclusão de um carro. O código atual permite que
+qualquer usuário autenticado exclua qualquer carro, sem verificar se o usuário possui
+privilégios administrativos. Operações destrutivas como exclusão deveriam ser restritas
+apenas a usuários administradores, similar ao que é feito no controller de users.
+*/
 controller.delete = async function(req, res) {
   try {
     await prisma.car.delete({

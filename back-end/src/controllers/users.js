@@ -176,6 +176,14 @@ controller.login = async function(req, res) {
       // HTTP 401: Unauthorized
       if(! user) return res.status(401).end()
 
+      /*
+      Vulnerabilidade: API2:2023 - Falha de autenticação
+      Esta vulnerabilidade foi evitada no código ao usar bcrypt para hash de senhas e comparação
+      segura de senhas. O código anterior tinha vulnerabilidade de autenticação fixa (comentada)
+      e comparação de senha em texto plano. Agora, as senhas são armazenadas como hash no banco
+      de dados e a validação é feita usando bcrypt.compare(), que compara o hash da senha fornecida
+      com o hash armazenado de forma segura, evitando exposição de senhas em texto plano.
+      */
       // REMOVENDO VULNERABILIDADE DE AUTENTICAÇÃO FIXA
       // if(req.body?.username === 'admin' && req.body?.password === 'admin123') passwordIsValid = true
       // else passwordIsValid = user.password === req.body?.password

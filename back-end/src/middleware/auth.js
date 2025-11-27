@@ -1,4 +1,12 @@
 /*
+Vulnerabilidade: API2:2023 - Falha de autenticação
+Esta vulnerabilidade foi evitada no código ao implementar verificação robusta de autenticação
+usando JWT (JSON Web Tokens) com verificação de integridade e validade do token. O middleware
+verifica o token tanto em cookies (httpOnly) quanto no cabeçalho Authorization, garantindo
+que apenas requisições com tokens válidos e não expirados sejam processadas. Tokens inválidos
+ou expirados resultam em resposta HTTP 403 Forbidden.
+*/
+/*
   Este middleware intercepta todas as rotas e verifica
   se um token de autorização foi enviado junto com a
   requisição
